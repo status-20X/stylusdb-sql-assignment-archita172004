@@ -38,14 +38,45 @@
 // });
 // tests/index.test.js
 
+// const executeSELECTQuery = require("../src/index");
+
+// test("Execute SQL Query with WHERE Clause", async () => {
+//   const query = "SELECT id, name FROM sample WHERE age = 25";
+//   const result = await executeSELECTQuery(query);
+//   expect(result.length).toBe(1);
+//   expect(result[0]).toHaveProperty("id");
+//   expect(result[0]).toHaveProperty("name");
+//   expect(result[0].id).toBe("2");
+// });
+
 const executeSELECTQuery = require("../src/index");
 
-test("Execute SQL Query", async () => {
-  const query = "SELECT id, name FROM sample";
+test("Execute SQL Query with WHERE Clause", async () => {
+  const query = "SELECT id, name FROM sample WHERE age = 25";
   const result = await executeSELECTQuery(query);
-  expect(result.length).toBeGreaterThan(0);
+  expect(result.length).toBe(1);
   expect(result[0]).toHaveProperty("id");
   expect(result[0]).toHaveProperty("name");
-  expect(result[0]).not.toHaveProperty("age");
-  expect(result[0]).toEqual({ id: "1", name: "John" });
+  expect(result[0].id).toBe("2"); // Modify this expectation based on your sample data
+});
+
+// Test with non-existent value in WHERE clause
+test("Execute SQL Query with non-existent WHERE Clause value", async () => {
+  const query = "SELECT id, name FROM sample WHERE age = 30";
+  const result = await executeSELECTQuery(query);
+  expect(result.length).toBe(0); // Expect no results
+});
+
+// Test case sensitivity
+test("Execute SQL Query with WHERE Clause (case-sensitive)", async () => {
+  const query = "SELECT id, name FROM sample WHERE AGE = 25"; // All caps in WHERE clause
+  const result = await executeSELECTQuery(query);
+  expect(result.length).toBe(0); // Expect no results (shouldn't match due to case sensitivity)
+});
+
+// Test case insensitivity
+test("Execute SQL Query with WHERE Clause (case-insensitive)", async () => {
+  const query = "SELECT id, name FROM sample WHERE AgE = 25"; // Mixed case in WHERE clause
+  const result = await executeSELECTQuery(query);
+  expect(result.length).toBe(1); // Expect one result (case-insensitive matching)
 });
