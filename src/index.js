@@ -43,22 +43,63 @@
 // }
 
 // module.exports = executeSELECTQuery;
-const parseQuery = require("./queryParser");
-const readCSV = require("./csvReader");
+// const parseQuery = require("./queryParser");
+// const readCSV = require("./csvReader");
+
+// async function executeSELECTQuery(query) {
+//   const { fields, table, whereClause } = parseQuery(query);
+//   const data = await readCSV(`${table}.csv`);
+
+//   // Filtering based on WHERE clause
+//   const filteredData = whereClause
+//     ? data.filter((row) => {
+//         const [field, value] = whereClause.split("=").map((s) => s.trim());
+//         return row[field] === value;
+//       })
+//     : data;
+
+//   // Selecting the specified fields
+//   return filteredData.map((row) => {
+//     const selectedRow = {};
+//     fields.forEach((field) => {
+//       selectedRow[field] = row[field];
+//     });
+//     return selectedRow;
+//   });
+// }
+
+// module.exports = executeSELECTQuery;
 
 async function executeSELECTQuery(query) {
-  const { fields, table, whereClause } = parseQuery(query);
+  const { fields, table, whereClauses } = parseQuery(query);
   const data = await readCSV(`${table}.csv`);
 
-  // Filtering based on WHERE clause
-  const filteredData = whereClause
-    ? data.filter((row) => {
-        const [field, value] = whereClause.split("=").map((s) => s.trim());
-        return row[field] === value;
-      })
-    : data;
+  // Apply WHERE clause filtering
+  const filteredData =
+    whereClauses.length > 0
+      ? data.filter((row) =>
+          whereClauses.every((clause) => {
+            const { field, operator, value } = clause;
 
-  // Selecting the specified fields
+            // Handle different operators (expand as needed)
+            switch (operator.toLowerCase()) {
+              case "===":
+                return row[field] === value;
+              case "!==":
+                return row[field] !== value;
+              case ">":
+                return row[field] > value;
+              case "<":
+                return row[field] < value;
+              // Add more cases for other operators
+              default:
+                throw new Error(`Unsupported operator: ${operator}`);
+            }
+          })
+        )
+      : data;
+
+  // Select the specified fields
   return filteredData.map((row) => {
     const selectedRow = {};
     fields.forEach((field) => {
@@ -67,5 +108,3 @@ async function executeSELECTQuery(query) {
     return selectedRow;
   });
 }
-
-module.exports = executeSELECTQuery;
