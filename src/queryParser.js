@@ -92,6 +92,11 @@ function parseWhereClause(whereString) {
   const conditionRegex = /(.?)(=|!=|>|<|>=|<=)(.)/;
   return whereString.split(/ AND | OR /i).map((conditionString) => {
     const match = conditionString.match(conditionRegex);
+    if (conditionString.includes(" LIKE ")) {
+      const [field, , pattern] = conditionString.split(/\sLIKE\s/i);
+      return { field: field.trim(), operator: "LIKE", value: pattern.trim() };
+    }
+
     if (match) {
       const [, field, operator, value] = match;
       return { field: field.trim(), operator, value: value.trim() };
