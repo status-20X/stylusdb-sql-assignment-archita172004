@@ -1,6 +1,33 @@
 const { parseQuery } = require("./queryParser");
 const readCSV = require("./csvReader");
 
+function evaluateCondition(row, clause) {
+  let { field, operator, value } = clause;
+  // Check if the field exists in the row
+  if (row[field] === undefined) {
+    throw new Error(`Invalid field: ${field}`);
+  }
+  // Parse row value and condition value based on their actual types
+  const rowValue = parseValue(row[field]);
+  let conditionValue = parseValue(value);
+  switch (operator) {
+    case "=":
+      return rowValue === conditionValue;
+    case "!=":
+      return rowValue !== conditionValue;
+    case ">":
+      return rowValue > conditionValue;
+    case "<":
+      return rowValue < conditionValue;
+    case ">=":
+      return rowValue >= conditionValue;
+    case "<=":
+      return rowValue <= conditionValue;
+    default:
+      throw new Error(`Unsupported operator: ${operator}`);
+  }
+}
+
 async function executeSELECTQuery(query) {
   try {
     const {
